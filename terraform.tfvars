@@ -1,0 +1,10 @@
+region = "us-east1"
+project = "your-gcp-project"
+topic = "dlp-scan-topic"
+subscription = "dlp-scan-subscription"
+resource = "your-data-bucket-to-scan"
+event_type = "google.storage.object.finalize"
+min_likelihood = "LIKELY"
+source_archive_bucket = "your-staging-bucket"
+slack_webhook_url = "https://hooks.slack.com/services/XXX/XXX/xxx"
+
