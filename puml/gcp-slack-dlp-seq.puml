@@ -1,0 +1,40 @@
+title Automated GCS Object Scanning with Notifications using Slack 
+
+!define GCPPuml https://raw.githubusercontent.com/gamma-data/GCP-C4-PlantUML/master/templates
+!includeurl GCPPuml/GCPCommon.puml
+!includeurl GCPPuml/Storage/CloudStorage.puml
+!includeurl GCPPuml/Compute/CloudFunctions.puml
+!includeurl GCPPuml/Security/CloudDLP.puml
+!includeurl GCPPuml/DataAnalytics/CloudPubSub.puml
+!includeurl GCPPuml/Misc/Slack.puml
+
+actor User as user
+CloudStorageParticipant(gcs, "Data Bucket", "Cloud Storage Bucket")
+CloudFunctionsParticipant(triggerfn, "Trigger Function", "Cloud Functions")
+CloudDLPParticipant(dlp, "DLP Service", "Cloud Data Loss Prevention")
+CloudPubSubParticipant(pubsub, "Scan Topic", "Cloud Pub Sub")
+CloudFunctionsParticipant(resultsfn, "Results Function", "Cloud Functions")
+SlackParticipant(slack, "Slack Notification", "Slack")
+
+alt put object 
+user -> gcs: new object created 
+gcs –> triggerfn: object created event 
+activate triggerfn 
+triggerfn –> dlp: trigger DLP job 
+deactivate triggerfn 
+activate dlp 
+dlp –> pubsub: //<< DLPJobName >>// 
+alt evaluate results 
+activate pubsub 
+pubsub –> resultsfn: //<< DLPJobName >>// 
+deactivate pubsub 
+activate resultsfn 
+resultsfn -> dlp: get job status 
+dlp -> resultsfn: //<< inspect_details >>// 
+deactivate dlp 
+resultsfn -> resultsfn: evaluate results 
+resultsfn –> slack: send slack message 
+slack –> user: send slack message 
+deactivate resultsfn 
+end 
+end 
